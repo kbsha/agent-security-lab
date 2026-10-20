@@ -17,6 +17,9 @@ architectures, side by side:
 | Consequential actions | Run immediately | Paused for human approval |
 | Audit trail | None | Every decision logged, secrets redacted |
 
+> ⭐ **If you use this lab in a class, talk, or workshop, please [star the repo](https://github.com/kbsha/agent-security-lab)
+> and [follow @kbsha](https://github.com/kbsha) for more AI-security labs.** It helps other people find it.
+
 > **Safety:** everything is simulated and synthetic. The "secret" is the dummy value
 > `TRAINING-ONLY-4821`, email goes to an in-memory outbox, and "isolating a host" only
 > appends to a list. Nothing connects to real systems.
