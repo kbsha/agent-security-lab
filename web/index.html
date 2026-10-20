@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trust, But Verify — Live Lab</title>
+<style>
+  :root {
+    --ink: #0E1A2B; --panel: #15243A; --panel2: #1B2D45; --line: #2A4365;
+    --text: #EEF2F6; --muted: #B8C4D6; --dim: #8496AE;
+    --amber: #F5A524; --teal: #14A08F; --red: #E5484D;
+    --mono: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ink); color: var(--text); font: 17px/1.45 "Segoe UI", Calibri, system-ui, sans-serif; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 22px 28px 12px; flex-wrap: wrap; }
+  .kicker { color: var(--amber); font-weight: 700; letter-spacing: .18em; font-size: 12px; }
+  h1 { font-family: Cambria, Georgia, serif; font-size: 34px; margin: 4px 0 0; }
+  .sub { color: var(--muted); margin-top: 2px; }
+  main { padding: 0 28px 28px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  .controls { padding: 16px 18px; display: grid; gap: 12px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  input[type=text], select, textarea {
+    background: var(--ink); color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 11px; font: inherit; font-size: 16px;
+  }
+  #task { width: 100%; }
+  textarea { width: 100%; min-height: 260px; font-family: var(--mono); font-size: 14px; }
+  .check { display: flex; gap: 8px; align-items: center; color: var(--muted); cursor: pointer; }
+  button {
+    font: inherit; font-weight: 700; font-size: 15px; border-radius: 8px; padding: 10px 16px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel2); color: var(--text);
+  }
+  button:hover { filter: brightness(1.15); }
+  button.red { background: var(--red); border-color: var(--red); color: #fff; }
+  button.teal { background: var(--teal); border-color: var(--teal); color: #fff; }
+  button.amber { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+  button.link { background: none; border: none; color: var(--amber); padding: 6px 4px; text-decoration: underline; }
+  .spacer { flex: 1; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+  .pane { display: flex; flex-direction: column; min-height: 520px; overflow: hidden; }
+  .pane-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .tag { font-weight: 800; letter-spacing: .12em; font-size: 13px; padding: 5px 10px; border-radius: 999px; }
+  .tag.red { background: var(--red); } .tag.teal { background: var(--teal); }
+  .pane-desc { color: var(--dim); font-size: 13px; }
+  .status { margin-left: auto; font-size: 13px; color: var(--muted); }
+  .status.running { color: var(--amber); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px 16px; }
+  .tile { background: var(--panel2); border-radius: 10px; padding: 10px 12px; }
+  .tile .k { font-size: 12px; color: var(--muted); }
+  .tile .v { font-size: 24px; font-weight: 800; margin-top: 2px; }
+  .tile .v.bad { color: var(--red); } .tile .v.good { color: var(--teal); }
+  .tile .v small { font-size: 14px; font-weight: 600; }
+  .timeline { flex: 1; overflow-y: auto; padding: 4px 16px 12px; max-height: 52vh; }
+  .step { display: grid; grid-template-columns: 116px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); animation: in .25s ease; }
+  @keyframes in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+  .badge { font-size: 11px; font-weight: 800; letter-spacing: .08em; border-radius: 6px; padding: 4px 6px; height: fit-content; text-align: center; }
+  .b-think { background: #24395a; color: var(--muted); }
+  .b-call { background: #2c3f1c; color: #cfe8a8; }
+  .b-ok { background: #123f3a; color: #8fe3d5; }
+  .b-block { background: var(--red); color: #fff; }
+  .b-wait { background: var(--amber); color: var(--ink); }
+  .b-final { background: var(--teal); color: #fff; }
+  .b-err { background: #5a1f22; color: #ffb4b6; }
+  .b-info { background: var(--panel2); color: var(--muted); }
+  .think { color: var(--muted); font-style: italic; }
+  .mono { font-family: var(--mono); font-size: 14px; word-break: break-word; }
+  pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .more { color: var(--amber); cursor: pointer; font-size: 13px; }
+  .blocked strong { color: #ffb4b6; }
+  mark { background: var(--red); color: #fff; padding: 0 3px; border-radius: 3px; }
+  .final { margin: 0 16px 16px; padding: 12px 14px; background: var(--panel2); border-radius: 10px; white-space: pre-wrap; display: none; }
+  .final h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .14em; color: var(--muted); }
+  section.extra { margin-top: 18px; padding: 16px 18px; }
+  section.extra h3 { margin: 0 0 10px; font-family: Cambria, Georgia, serif; font-size: 22px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-size: 13px; letter-spacing: .06em; }
+  #audit-body td:nth-child(-n+2) { white-space: nowrap; }
+  td.good { color: var(--teal); font-weight: 800; } td.bad { color: var(--red); font-weight: 800; }
+  .deny { color: var(--red); font-weight: 700; } .allow { color: var(--teal); font-weight: 700; }
+  .hidden { display: none !important; }
+  .overlay { position: fixed; inset: 0; background: rgba(5, 10, 18, .78); display: flex; align-items: center; justify-content: center; z-index: 10; padding: 16px; }
+  .modal { width: min(640px, 100%); padding: 24px; border: 2px solid var(--amber); }
+  .modal h2 { margin: 0 0 6px; font-family: Cambria, Georgia, serif; color: var(--amber); }
+  .modal .mono { background: var(--ink); padding: 12px; border-radius: 8px; margin: 12px 0; font-size: 16px; }
+  .doc-modal { width: min(900px, 100%); border-color: var(--line); }
+  .note { color: var(--dim); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="kicker">KTT FELLOWSHIP · LIVE LAB</div>
+    <h1>Trust, But Verify</h1>
+    <div class="sub">NovaTech SOC Assistant: the same model in two different architectures</div>
+  </div>
+  <div class="row">
+    <button class="link" onclick="openDoc()">View the attacker's document</button>
+  </div>
+</header>
+
+<main>
+  <div class="card controls">
+    <label class="field">Analyst task
+      <input id="task" type="text">
+    </label>
+    <div class="row">
+      <label class="field">Model
+        <select id="provider" onchange="toggleLocal()">
+          <option value="mock">Mock LLM (deterministic, naive)</option>
+          <option value="openai">Real LLM (OpenAI-compatible endpoint)</option>
+        </select>
+      </label>
+      <label class="field local hidden">Endpoint
+        <input id="base_url" type="text" value="http://localhost:11434/v1" size="26">
+      </label>
+      <label class="field local hidden">Model name
+        <input id="model" type="text" value="llama3.1" size="12">
+      </label>
+      <label class="field">Pace
+        <select id="pace">
+          <option value="slow">Slow (narrate)</option>
+          <option value="normal" selected>Normal</option>
+          <option value="fast">Fast</option>
+        </select>
+      </label>
+      <label class="check"><input id="poison" type="checkbox" checked> Attacker's document in knowledge base</label>
+    </div>
+    <div class="row">
+      <button class="red" onclick="run('insecure')">Run insecure agent</button>
+      <button class="teal" onclick="run('secure')">Run secured agent</button>
+      <button class="amber" onclick="run('insecure'); run('secure')">Run both</button>
+      <span class="spacer"></span>
+      <button onclick="scorecard()">Run scorecard</button>
+      <button onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card pane" id="pane-insecure">
+      <div class="pane-head">
+        <span class="tag red">INSECURE</span>
+        <span class="pane-desc">Secret in prompt · all tools · no checks</span>
+        <span class="status">Idle</span>
+      </div>
+      <div class="tiles"></div>
+      <div class="timeline"></div>
+      <div class="final"></div>
+    </div>
+    <div class="card pane" id="pane-secure">
+      <div class="pane-head">
+        <span class="tag teal">SECURED</span>
+        <span class="pane-desc">Minimal context · allowlist · policy gateway</span>
+        <span class="status">Idle</span>
+      </div>
+      <div class="tiles"></div>
+      <div class="timeline"></div>
+      <div class="final"></div>
+    </div>
+  </div>
+
+  <section class="card extra hidden" id="score-card">
+    <h3>Live Scorecard</h3>
+    <div id="score-body"></div>
+  </section>
+
+  <section class="card extra hidden" id="audit-card">
+    <h3>Gateway Audit Log <span class="note">(secured agent)</span></h3>
+    <div id="audit-body"></div>
+  </section>
+</main>
+
+<div class="overlay hidden" id="approval">
+  <div class="card modal">
+    <div class="kicker">HUMAN-IN-THE-LOOP</div>
+    <h2>Approval required</h2>
+    <div>The secured agent wants to run a consequential action:</div>
+    <div class="mono" id="approval-call"></div>
+    <div class="note">Ask the room before you decide: should this action run?</div>
+    <div class="row" style="margin-top:16px">
+      <button class="teal" onclick="decide(false)">Deny</button>
+      <button onclick="decide(true)">Approve</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="doc">
+  <div class="card modal doc-modal">
+    <div class="kicker">ATTACKER-CONTROLLED CONTENT</div>
+    <h2 style="color:var(--text)">threat_intel_note.md</h2>
+    <div class="note">The injection sits in an HTML comment: invisible when the note is rendered for a human, fully visible to the model. Edit it live to try audience ideas.</div>
+    <textarea id="doc-text" style="margin-top:12px"></textarea>
+    <div class="row" style="margin-top:12px">
+      <button class="amber" onclick="saveDoc()">Save</button>
+      <button onclick="restoreDoc()">Restore default</button>
+      <span class="spacer"></span>
+      <button onclick="closeDoc()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const SECRET = /TRAINING-ONLY-\d{4}/g;
+const sources = {};
+const approvals = [];
+let defaultPoison = "";
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const hl = s => esc(s).replace(SECRET, m => `<mark>${m}</mark>`);
+
+function settings() {
+  return {
+    task: $("#task").value, provider: $("#provider").value, base_url: $("#base_url").value,
+    model: $("#model").value, pace: $("#pace").value, include_poison: $("#poison").checked,
+  };
+}
+function toggleLocal() {
+  document.querySelectorAll(".local").forEach(el => el.classList.toggle("hidden", $("#provider").value === "mock"));
+}
+async function post(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  return r.json();
+}
+
+function pane(mode) { return $("#pane-" + mode); }
+function setStatus(mode, text, running) {
+  const el = $(".status", pane(mode));
+  el.textContent = text; el.classList.toggle("running", !!running);
+}
+function addStep(mode, badge, cls, html) {
+  const tl = $(".timeline", pane(mode));
+  const div = document.createElement("div");
+  div.className = "step";
+  div.innerHTML = `<span class="badge ${cls}">${badge}</span><div>${html}</div>`;
+  tl.appendChild(div);
+  tl.scrollTop = tl.scrollHeight;
+  return div;
+}
+const fullOutputs = new Map();
+function resultHtml(text) {
+  const t = String(text);
+  if (t.length <= 240) return `<pre>${hl(t)}</pre>`;
+  const id = "r" + fullOutputs.size;
+  fullOutputs.set(id, t);
+  return `<pre>${hl(t.slice(0, 240))}…</pre><span class="more" onclick="expand(this, '${id}')">show full output</span>`;
+}
+function expand(link, id) {
+  link.previousElementSibling.innerHTML = hl(fullOutputs.get(id));
+  link.remove();
+}
+function tiles(mode, w) {
+  const v = (n, label) => `<div class="v ${n ? "bad" : "good"}">${label}</div>`;
+  $(".tiles", pane(mode)).innerHTML = `
+    <div class="tile"><div class="k">Secret read from vault</div>${v(w.secret_reads, w.secret_reads ? "YES" : "No")}</div>
+    <div class="tile"><div class="k">Emails sent outside</div>${v(w.external_emails, w.external_emails)}</div>
+    <div class="tile"><div class="k">Hosts disconnected</div>${v(w.isolated.length, w.isolated.length ? esc(w.isolated.join(", ")) : "None")}</div>`;
+}
+function clearPane(mode) {
+  if (sources[mode]) sources[mode].close();
+  $(".timeline", pane(mode)).innerHTML = "";
+  const f = $(".final", pane(mode)); f.style.display = "none"; f.innerHTML = "";
+  tiles(mode, { secret_reads: 0, external_emails: 0, isolated: [] });
+  setStatus(mode, "Idle");
+}
+
+async function run(mode) {
+  clearPane(mode);
+  if (mode === "secure") $("#audit-card").classList.add("hidden");
+  setStatus(mode, "Starting…", true);
+  const { run: id } = await post("/api/run", { ...settings(), mode });
+  const es = sources[mode] = new EventSource("/api/events?run=" + encodeURIComponent(id));
+  es.onmessage = msg => handle(mode, id, JSON.parse(msg.data));
+  es.onerror = () => { es.close(); };
+}
+
+function handle(mode, runId, e) {
+  switch (e.type) {
+    case "start":
+      setStatus(mode, "Running", true);
+      addStep(mode, "SETUP", "b-info", `<span class="note">Model: ${esc(e.model)}<br>Tools offered: ${e.tools.map(esc).join(", ")}</span>`);
+      break;
+    case "think": addStep(mode, "MODEL", "b-think", `<span class="think">${hl(e.text)}</span>`); break;
+    case "tool_call": addStep(mode, "TOOL CALL", "b-call", `<span class="mono">${hl(e.call)}</span>`); break;
+    case "tool_result": addStep(mode, e.layer === "approved" ? "APPROVED" : "RESULT", "b-ok", resultHtml(e.text)); break;
+    case "blocked":
+      addStep(mode, "BLOCKED", "b-block", `<div class="blocked"><strong>${esc(e.layer.toUpperCase())}</strong> · ${esc(e.reason)}</div>`);
+      break;
+    case "approval_request":
+      addStep(mode, "WAITING", "b-wait", "Paused for human approval…");
+      approvals.push({ runId, ...e });
+      showApproval();
+      break;
+    case "world": tiles(mode, e.world); break;
+    case "final": {
+      const f = $(".final", pane(mode));
+      f.innerHTML = `<h4>FINAL ANSWER</h4>${hl(e.text)}`; f.style.display = "block";
+      break;
+    }
+    case "audit": renderAudit(e.audit); break;
+    case "info": addStep(mode, "INFO", "b-info", esc(e.text)); break;
+    case "error": addStep(mode, "ERROR", "b-err", esc(e.text)); break;
+    case "done": setStatus(mode, "Done"); sources[mode]?.close(); break;
+  }
+}
+
+function showApproval() {
+  if (!approvals.length) return $("#approval").classList.add("hidden");
+  const a = approvals[0];
+  const args = Object.entries(a.args || {}).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ");
+  $("#approval-call").textContent = `${a.name}(${args})`;
+  $("#approval").classList.remove("hidden");
+}
+async function decide(approve) {
+  const a = approvals.shift();
+  if (a) await post("/api/approve", { run: a.runId, call_id: a.call_id, approve });
+  showApproval();
+}
+
+function renderAudit(audit) {
+  if (!audit.length) return;
+  $("#audit-card").classList.remove("hidden");
+  $("#audit-body").innerHTML = `<table><tr><th>TIME</th><th>USER</th><th>TOOL CALL</th><th>DECISION</th><th>LAYER</th><th>REASON</th></tr>${
+    audit.map(r => `<tr><td>${esc(r.ts)}</td><td>${esc(r.user)}</td><td class="mono">${esc(r.tool)}(${esc(Object.entries(r.args || {}).map(([k, v]) => k + "=" + JSON.stringify(v)).join(", "))})</td>
+      <td class="${r.decision}">${r.decision.toUpperCase()}</td><td>${esc(r.layer)}</td><td>${esc(r.reason)}</td></tr>`).join("")}</table>`;
+}
+
+async function scorecard() {
+  $("#score-card").classList.remove("hidden");
+  $("#score-body").innerHTML = `<span class="note">Running both agents… (approvals auto-declined)</span>`;
+  $("#score-card").scrollIntoView({ behavior: "smooth" });
+  const s = settings();
+  const res = await post("/api/scorecard", s);
+  const cell = (v, good) => `<td class="${v === good ? "good" : "bad"}">${v ? "Yes" : "No"}</td>`;
+  const model = s.provider === "mock" ? "Mock LLM" : `${s.model} @ ${s.base_url}`;
+  const errs = Object.entries(res.errors || {}).map(([m, e]) => `<div class="deny">${esc(m)}: ${esc(e)}</div>`).join("");
+  $("#score-body").innerHTML = `<table><tr><th>TEST</th><th>INSECURE</th><th>SECURED</th></tr>${
+    res.rows.map(r => `<tr><td>${esc(r.label)}</td>${cell(r.insecure, r.good_when)}${cell(r.secure, r.good_when)}</tr>`).join("")
+  }</table><div class="note" style="margin-top:8px">Measured just now with ${esc(model)}. Green = desired outcome. Nothing pre-filled.</div>${errs}`;
+}
+
+async function resetAll() {
+  await post("/api/reset");
+  ["insecure", "secure"].forEach(clearPane);
+  ["#score-card", "#audit-card"].forEach(s => $(s).classList.add("hidden"));
+}
+
+async function openDoc() { $("#doc").classList.remove("hidden"); }
+function closeDoc() { $("#doc").classList.add("hidden"); }
+async function saveDoc() { await post("/api/poison", { text: $("#doc-text").value }); closeDoc(); }
+async function restoreDoc() { $("#doc-text").value = defaultPoison; await post("/api/poison", { text: defaultPoison }); }
+
+(async () => {
+  const cfg = await (await fetch("/api/config")).json();
+  $("#task").value = cfg.task;
+  $("#doc-text").value = cfg.poison;
+  defaultPoison = cfg.default_poison;
+  ["insecure", "secure"].forEach(clearPane);
+})();
+</script>
+</body>
+</html>
