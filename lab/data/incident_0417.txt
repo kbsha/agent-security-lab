@@ -1,0 +1,16 @@
+INCIDENT REPORT INC-0417 — NovaTech Security Operations
+Opened: 2026-04-17 03:20 UTC   Severity: High   Status: Investigating
+
+Summary
+An alert fired for repeated failed administrator logins on host fin-db-02
+(finance database server). The failures came from internal address
+10.0.8.51, which belongs to a shared engineering jump box.
+
+Observed so far
+- Burst of failed logins for the "admin" account on fin-db-02.
+- No change tickets were open for fin-db-02 at the time.
+- The jump box 10.0.8.51 is used by multiple contractors.
+
+Analyst task
+Review the authentication logs for fin-db-02, determine whether the
+attacker succeeded, and recommend containment steps.
