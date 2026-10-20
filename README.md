@@ -21,6 +21,17 @@ architectures, side by side:
 > `TRAINING-ONLY-4821`, email goes to an in-memory outbox, and "isolating a host" only
 > appends to a list. Nothing connects to real systems.
 
+## Online version (no install)
+
+[docs/index.html](docs/index.html) is a browser-only build of the demo: the same agent, gateway,
+mock model and scorecard, ported to JavaScript, so it runs from any static host with no server.
+With GitHub Pages enabled on this repo (Settings → Pages → *Deploy from a branch* → `main` /
+`/docs`), it is served at `https://kbsha.github.io/agent-security-lab/`.
+
+To change it, edit [docs/app.html](docs/app.html), then run `python3 docs/build.py` to regenerate
+`index.html`. The online version always uses the mock model; use the Python server below to try
+a real LLM.
+
 ## Quick start
 
 Requires Python 3.10+. No packages to install.
