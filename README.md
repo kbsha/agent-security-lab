@@ -35,7 +35,7 @@ To change it, edit [docs/app.html](docs/app.html), then run `python3 docs/build.
 `index.html`. The online version always uses the mock model; use the Python server below to try
 a real LLM.
 
-## Quick start
+## Quick start as follow ...
 
 Requires Python 3.10+. No packages to install.
 
