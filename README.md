@@ -59,7 +59,7 @@ Tests (the security properties, as regression tests):
 python3 -m unittest -v
 ```
 
-## Presenter run-sheet (≈15 minutes, slides 6–12 of the deck)
+## Presenter run-sheet (....)
 
 1. **Set the scene** (*The Incident at NovaTech*). Show the task box. Click
    **View the attacker's document**: the injection sits in an HTML comment, invisible when
