@@ -1,4 +1,4 @@
-# Trust, But Verify — Agent Security Live Lab demo
+# Trust, But Verify — Agent Security Live Lab demo for the scenario
 
 A live demonstration of **indirect prompt injection** against an AI agent, and of the
 **application-level controls** that contain it. Built for the KTT Fellowship masterclass
