@@ -24,7 +24,7 @@ architectures, side by side:
 > `TRAINING-ONLY-4821`, email goes to an in-memory outbox, and "isolating a host" only
 > appends to a list. Nothing connects to real systems.
 
-## Online version (no install)
+## Online version (no install nedded )
 
 [docs/index.html](docs/index.html) is a browser-only build of the demo: the same agent, gateway,
 mock model and scorecard, ported to JavaScript, so it runs from any static host with no server.
