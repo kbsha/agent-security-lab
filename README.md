@@ -114,7 +114,7 @@ as the reliable default on stage.
 | **R**ecord and review | `Gateway.audit`, with `redact()` |
 | **D**efend by testing | [tests/test_lab.py](tests/test_lab.py) and [lab/scorecard.py](lab/scorecard.py) |
 
-## Project layout
+## Project layout summery 
 
 ```
 agent-security-lab/
